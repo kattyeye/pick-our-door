@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Help pick our front door color</title>
+<meta name="description" content="A neighborhood poll: tap a color to try it on our front door, then vote.">
+<meta property="og:title" content="Help pick our front door color">
+<meta property="og:description" content="Tap a color to try it on the door, then cast your vote.">
+<meta name="theme-color" content="#F4EEE3">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='8' y='3' width='16' height='26' rx='1.5' fill='%2355697D'/%3E%3Ccircle cx='20.5' cy='17' r='1.6' fill='%23DBB04A'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F4EEE3;
+    --card: #FBF8F2;
+    --ink: #2A2621;
+    --muted: #6E655B;
+    --line: #E2D9CA;
+    --siding: #55697D;
+    --accent: #2F4A63;
+    --door: #D8D2C6;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.5 "Figtree", system-ui, -apple-system, sans-serif;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 18px 8px; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .eyebrow::before { content: ""; width: 18px; height: 2px; background: currentColor; border-radius: 2px; }
+  h1 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 650;
+    font-size: clamp(30px, 8.4vw, 40px); line-height: 1.05; letter-spacing: -.01em;
+    margin: 10px 0 10px;
+  }
+  .lede { margin: 0 0 18px; color: var(--muted); font-size: 17px; }
+
+  .house {
+    background: linear-gradient(#EAF0F3, #F6F2EA 70%);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; position: relative;
+  }
+  .house svg { display: block; width: 100%; height: auto; }
+  .house .door-fill { fill: var(--door); transition: fill .45s ease; }
+  .now-showing {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 12px 4px 4px; min-height: 44px;
+  }
+  .now-showing strong { font-family: "Fraunces", Georgia, serif; font-weight: 650; font-size: 20px; }
+  .now-showing span { color: var(--muted); font-size: 14px; white-space: nowrap; }
+  .fine { font-size: 12.5px; color: var(--muted); margin: 2px 4px 0; }
+
+  h2 {
+    font-family: "Fraunces", Georgia, serif; font-weight: 650; font-size: 22px;
+    margin: 26px 0 12px;
+  }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opt {
+    appearance: none; border: 1.5px solid var(--line); background: var(--card);
+    border-radius: 14px; padding: 10px; text-align: left; cursor: pointer;
+    font: inherit; color: inherit; display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: center;
+    transition: border-color .15s, box-shadow .15s, transform .1s;
+    min-height: 72px;
+  }
+  .opt:active { transform: scale(.98); }
+  .opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .opt[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink) inset; }
+  .chip {
+    width: 40px; height: 54px; border-radius: 4px 4px 2px 2px; position: relative;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
+  }
+  .chip::after { /* tiny knob */
+    content: ""; position: absolute; right: 6px; top: 55%; width: 5px; height: 5px; border-radius: 50%;
+    background: #C4A25A; box-shadow: 0 0 0 1px rgba(0,0,0,.2);
+  }
+  .chip.other {
+    background: repeating-linear-gradient(135deg, #E9E3D8 0 6px, #F6F2EA 6px 12px);
+    display: grid; place-items: center; font-weight: 700; color: var(--muted); font-size: 20px;
+  }
+  .chip.other::after { display: none; }
+  .opt b { display: block; font-weight: 650; line-height: 1.2; font-size: 15px; }
+  .opt small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.3; margin-top: 2px; }
+
+  .field { margin-top: 12px; }
+  .field label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .field input, .field textarea {
+    width: 100%; font: inherit; font-size: 16px; color: var(--ink);
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  }
+  .field textarea { resize: vertical; min-height: 76px; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  details.extras { margin-top: 14px; }
+  details.extras summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 15px; padding: 6px 0; }
+
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    background: linear-gradient(rgba(244,238,227,0), var(--paper) 30%);
+    padding: 18px 18px calc(14px + env(safe-area-inset-bottom));
+  }
+  .bar-inner { max-width: 560px; margin: 0 auto; }
+  .btn {
+    width: 100%; border: 0; border-radius: 14px; padding: 16px 18px;
+    font: inherit; font-size: 17px; font-weight: 700; cursor: pointer;
+    background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 6px 18px rgba(42,38,33,.18);
+  }
+  .btn[disabled] { background: #B9B0A3; box-shadow: none; cursor: default; }
+  .btn .dot { width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,.7); }
+  .msg { text-align: center; font-size: 14px; color: #9A2B2B; margin: 8px 0 0; min-height: 0; }
+
+  .results .row { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; margin: 0 0 14px; }
+  .results .name { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .results .name i { width: 14px; height: 14px; border-radius: 3px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+  .results .num { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 14px; }
+  .results .track { grid-column: 1 / -1; height: 12px; background: #E8E0D2; border-radius: 99px; overflow: hidden; }
+  .results .fill { display: block; height: 100%; border-radius: 99px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.14); width: 0; transition: width .8s cubic-bezier(.2,.8,.2,1); }
+  .results .mine .name::after { content: "your vote"; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); background: #DCE5EC; padding: 2px 6px; border-radius: 6px; }
+  .thanks {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px; margin: 4px 0 18px;
+  }
+  .thanks p { margin: 4px 0 0; color: var(--muted); }
+  .thanks h2 { margin: 0; }
+  .linkish { background: none; border: 0; padding: 0; font: inherit; color: var(--accent); font-weight: 600; text-decoration: underline; cursor: pointer; }
+  .winner {
+    background: var(--ink); color: #fff; border-radius: var(--radius); padding: 18px; margin: 0 0 18px;
+  }
+  .winner h2 { color: #fff; margin: 0 0 4px; }
+  .winner p { margin: 0; opacity: .85; }
+
+  footer { max-width: 560px; margin: 26px auto 0; padding: 0 18px; color: var(--muted); font-size: 13.5px; }
+  footer p { margin: 0 0 6px; }
+  .preview-note { background: #FFF3CD; color: #6B5300; font-size: 13px; padding: 8px 12px; border-radius: 10px; margin-bottom: 14px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="preview-note" id="previewNote" hidden>Preview mode — votes are only saved on this device.</div>
+
+  <span class="eyebrow">A neighborhood poll</span>
+  <h1>Help pick our front door color</h1>
+  <p class="lede">The new siding is up, and the front door is next. Tap a color to try it on, then cast your vote.</p>
+
+  <div class="house" aria-hidden="true">
+    <svg viewBox="0 0 360 300" xmlns="http://www.w3.org/2000/svg" id="houseSvg">
+      <defs>
+        <pattern id="lap" width="12" height="11" patternUnits="userSpaceOnUse">
+          <rect width="12" height="11" fill="#55697D"/>
+          <rect y="9.4" width="12" height="1.6" fill="#44566A"/>
+          <rect y="0" width="12" height=".8" fill="#6A7E92"/>
+        </pattern>
+        <pattern id="shakes" width="60" height="32" patternUnits="userSpaceOnUse">
+          <!-- row 1 -->
+          <rect x="0"  y="0" width="8"  height="16" fill="#8E5E3D"/>
+          <rect x="8"  y="0" width="12" height="16" fill="#A87750"/>
+          <rect x="20" y="0" width="7"  height="16" fill="#7A4F33"/>
+          <rect x="27" y="0" width="10" height="16" fill="#9A6843"/>
+          <rect x="37" y="0" width="13" height="16" fill="#86593A"/>
+          <rect x="50" y="0" width="10" height="16" fill="#B07E57"/>
+          <!-- row 2 (staggered) -->
+          <rect x="0"  y="16" width="11" height="16" fill="#9C6B46"/>
+          <rect x="11" y="16" width="7"  height="16" fill="#7E5236"/>
+          <rect x="18" y="16" width="9"  height="16" fill="#AD7B54"/>
+          <rect x="27" y="16" width="13" height="16" fill="#8A5C3C"/>
+          <rect x="40" y="16" width="8"  height="16" fill="#A37149"/>
+          <rect x="48" y="16" width="12" height="16" fill="#80553A"/>
+          <!-- grain -->
+          <g fill="#fff" opacity=".09">
+            <rect x="3" y="1" width=".6" height="13"/><rect x="13" y="2" width=".6" height="12"/><rect x="31" y="1" width=".6" height="13"/>
+            <rect x="43" y="2" width=".6" height="11"/><rect x="55" y="1" width=".6" height="13"/>
+            <rect x="5" y="18" width=".6" height="12"/><rect x="22" y="17" width=".6" height="13"/><rect x="33" y="18" width=".6" height="12"/><rect x="53" y="17" width=".6" height="13"/>
+          </g>
+          <!-- gaps + course shadows -->
+          <g fill="#3E281A" opacity=".6">
+            <rect x="7.7" y="0" width=".7" height="16"/><rect x="19.7" y="0" width=".7" height="16"/><rect x="26.7" y="0" width=".7" height="16"/>
+            <rect x="36.7" y="0" width=".7" height="16"/><rect x="49.7" y="0" width=".7" height="16"/><rect x="59.5" y="0" width=".5" height="16"/>
+            <rect x="10.7" y="16" width=".7" height="16"/><rect x="17.7" y="16" width=".7" height="16"/><rect x="26.7" y="16" width=".7" height="16"/>
+            <rect x="39.7" y="16" width=".7" height="16"/><rect x="47.7" y="16" width=".7" height="16"/>
+            <rect x="0" y="14.6" width="60" height="1.6"/><rect x="0" y="30.6" width="60" height="1.6"/>
+          </g>
+        </pattern>
+        <pattern id="brick" width="16" height="8" patternUnits="userSpaceOnUse">
+          <rect width="16" height="8" fill="#54504A"/>
+          <g fill="#6B665F" opacity=".7">
+            <rect y="7.3" width="16" height=".7"/><rect x="7.6" y="0" width=".7" height="3.7"/>
+            <rect y="3.6" width="16" height=".7"/><rect x="0" y="3.6" width=".7" height="4"/>
+          </g>
+        </pattern>
+        <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#E6EDF0"/><stop offset=".55" stop-color="#B9C6CD"/><stop offset="1" stop-color="#8FA0A9"/>
+        </linearGradient>
+        <linearGradient id="doorShade" x1="0" x2="1">
+          <stop offset="0" stop-color="#000" stop-opacity=".18"/><stop offset=".12" stop-color="#000" stop-opacity="0"/>
+          <stop offset=".88" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/>
+        </linearGradient>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#FFE3A3" stop-opacity=".9"/><stop offset="1" stop-color="#FFE3A3" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <!-- siding -->
+      <rect x="0" y="0" width="360" height="236" fill="url(#lap)"/>
+      <!-- frieze / soffit line -->
+      <rect x="0" y="0" width="360" height="7" fill="#F7F5F0"/>
+      <rect x="0" y="7" width="360" height="2" fill="#000" opacity=".08"/>
+
+      <!-- cedar shake panel -->
+      <rect x="92" y="9" width="176" height="227" fill="url(#shakes)"/>
+      <!-- corner boards -->
+      <rect x="86" y="9" width="8" height="227" fill="#F7F5F0"/>
+      <rect x="266" y="9" width="8" height="227" fill="#F7F5F0"/>
+      <rect x="94" y="9" width="2" height="227" fill="#000" opacity=".12"/>
+
+      <!-- porch light (left only) -->
+      <circle cx="122" cy="118" r="22" fill="url(#glow)"/>
+      <rect x="119" y="100" width="6" height="4" fill="#1F1D1B"/>
+      <path d="M115 104h14l-2 3h-10z" fill="#1F1D1B"/>
+      <rect x="116.5" y="107" width="11" height="17" fill="#F3D38A" stroke="#1F1D1B" stroke-width="2"/>
+      <path d="M115 124h14l-2 3h-10z" fill="#1F1D1B"/>
+
+      <!-- door casing (craftsman head) -->
+      <rect x="133" y="62" width="94" height="7" fill="#F7F5F0"/>
+      <rect x="133" y="69" width="94" height="2" fill="#000" opacity=".14"/>
+      <rect x="138" y="71" width="84" height="13" fill="#F7F5F0"/>
+      <rect x="140" y="84" width="10" height="152" fill="#F7F5F0"/>
+      <rect x="210" y="84" width="10" height="152" fill="#F7F5F0"/>
+      <rect x="148" y="84" width="2" height="152" fill="#000" opacity=".1"/>
+
+      <!-- door -->
+      <g id="door">
+        <rect class="door-fill" x="150" y="84" width="60" height="152"/>
+        <!-- lites -->
+        <g>
+          <rect x="156" y="92" width="14" height="32" fill="url(#glass)"/>
+          <rect x="173" y="92" width="14" height="32" fill="url(#glass)"/>
+          <rect x="190" y="92" width="14" height="32" fill="url(#glass)"/>
+          <g fill="none" stroke="#000" stroke-opacity=".25" stroke-width="1">
+            <rect x="155.5" y="91.5" width="15" height="33"/><rect x="172.5" y="91.5" width="15" height="33"/><rect x="189.5" y="91.5" width="15" height="33"/>
+          </g>
+        </g>
+        <!-- dentil shelf -->
+        <rect class="door-fill" x="152" y="129" width="56" height="5"/>
+        <rect x="152" y="129" width="56" height="5" fill="#000" opacity=".22"/>
+        <rect x="152" y="134" width="56" height="1.5" fill="#000" opacity=".25"/>
+        <g fill="#000" opacity=".18">
+          <rect x="155" y="135.5" width="4" height="3"/><rect x="163" y="135.5" width="4" height="3"/><rect x="171" y="135.5" width="4" height="3"/>
+          <rect x="179" y="135.5" width="4" height="3"/><rect x="187" y="135.5" width="4" height="3"/><rect x="195" y="135.5" width="4" height="3"/><rect x="203" y="135.5" width="2" height="3"/>
+        </g>
+        <!-- recessed panels -->
+        <g>
+          <rect x="156" y="145" width="14" height="80" fill="#000" opacity=".09"/>
+          <rect x="173" y="145" width="14" height="80" fill="#000" opacity=".09"/>
+          <rect x="190" y="145" width="14" height="80" fill="#000" opacity=".09"/>
+          <g fill="none" stroke-width="1.2">
+            <path d="M156 225V145h14" stroke="#000" stroke-opacity=".28"/><path d="M170 145v80h-14" stroke="#fff" stroke-opacity=".22"/>
+            <path d="M173 225V145h14" stroke="#000" stroke-opacity=".28"/><path d="M187 145v80h-14" stroke="#fff" stroke-opacity=".22"/>
+            <path d="M190 225V145h14" stroke="#000" stroke-opacity=".28"/><path d="M204 145v80h-14" stroke="#fff" stroke-opacity=".22"/>
+          </g>
+        </g>
+        <rect x="150" y="84" width="60" height="152" fill="url(#doorShade)"/>
+        <!-- hardware -->
+        <rect x="199.5" y="166" width="5" height="22" rx="2" fill="#B8964F"/>
+        <circle cx="202" cy="179" r="3" fill="#D2B36A" stroke="#7E6430" stroke-width=".8"/>
+        <text id="doorQ" x="180" y="198" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="30" font-weight="650" fill="#6E655B" opacity="0">?</text>
+      </g>
+
+      <!-- foundation (Mega Greige) -->
+      <rect x="0" y="236" width="360" height="30" fill="#ADA393"/>
+      <rect x="0" y="236" width="360" height="2" fill="#000" opacity=".12"/>
+
+      <!-- steps (Urbane Bronze brick) -->
+      <rect x="132" y="236" width="96" height="12" fill="url(#brick)"/>
+      <rect x="122" y="248" width="116" height="12" fill="url(#brick)"/>
+      <rect x="112" y="260" width="136" height="14" fill="url(#brick)"/>
+      <g fill="#7A756D"><rect x="132" y="236" width="96" height="2"/><rect x="122" y="248" width="116" height="2"/><rect x="112" y="260" width="136" height="2"/></g>
+
+      <!-- white rails -->
+      <g fill="#F7F5F0">
+        <rect x="104" y="226" width="7" height="48"/><rect x="102.5" y="223" width="10" height="4"/>
+        <rect x="249" y="226" width="7" height="48"/><rect x="247.5" y="223" width="10" height="4"/>
+      </g>
+
+      <!-- ground + plants -->
+      <rect x="0" y="266" width="360" height="34" fill="#C9B79A"/>
+      <rect x="0" y="274" width="112" height="26" fill="#B7A385"/>
+      <rect x="248" y="274" width="112" height="26" fill="#B7A385"/>
+      <g fill="#4F6B45">
+        <circle cx="30" cy="268" r="15"/><circle cx="52" cy="272" r="12"/><circle cx="83" cy="270" r="13"/>
+        <circle cx="282" cy="270" r="13"/><circle cx="308" cy="268" r="15"/><circle cx="334" cy="272" r="12"/>
+      </g>
+      <g fill="#6E8C61">
+        <circle cx="26" cy="263" r="7"/><circle cx="80" cy="265" r="6"/><circle cx="305" cy="263" r="7"/><circle cx="286" cy="266" r="5"/>
+      </g>
+      <g fill="#F7F5F0"><circle cx="34" cy="262" r="2.2"/><circle cx="46" cy="268" r="2"/><circle cx="300" cy="262" r="2.2"/><circle cx="330" cy="268" r="2"/></g>
+      <g fill="#D893B4" opacity=".85">
+        <ellipse cx="66" cy="282" rx="12" ry="9"/><ellipse cx="296" cy="284" rx="12" ry="9"/>
+      </g>
+    </svg>
+  </div>
+  <div class="now-showing" aria-live="polite">
+    <strong id="nowName">Pick a color below</strong>
+    <span id="nowCode"></span>
+  </div>
+  <p class="fine">Illustration of our house. Screens shift colors a bit — think of these as close cousins of the real paint.</p>
+
+  <!-- VOTE VIEW -->
+  <section id="voteView">
+    <h2>The contenders</h2>
+    <div class="options" id="options" role="group" aria-label="Door color options"></div>
+
+    <div class="field" id="writeInField" hidden>
+      <label for="writeIn">What color would you pick?</label>
+      <input id="writeIn" maxlength="60" placeholder="e.g. a deep plum, or Benjamin Moore Hale Navy" autocomplete="off">
+    </div>
+
+    <details class="extras">
+      <summary>Add your name or a note (optional)</summary>
+      <div class="field">
+        <label for="voterName">First name or street</label>
+        <input id="voterName" maxlength="40" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="note">Anything else?</label>
+        <textarea id="note" maxlength="280" placeholder="Love the new siding? Hate yellow doors? Tell us."></textarea>
+      </div>
+    </details>
+  </section>
+
+  <!-- RESULTS VIEW -->
+  <section id="resultsView" hidden>
+    <div class="winner" id="winnerBox" hidden>
+      <h2 id="winnerTitle"></h2>
+      <p>Thanks for helping, neighbors. Paint day is coming soon.</p>
+    </div>
+    <div class="thanks" id="thanksBox">
+      <h2 id="thanksTitle">Thanks, neighbor!</h2>
+      <p id="thanksText"></p>
+    </div>
+    <h2 id="resultsHeading">How the votes are looking</h2>
+    <div class="results" id="results"></div>
+    <p class="fine" id="totalLine"></p>
+  </section>
+</main>
+
+<footer>
+  <p id="closesLine"></p>
+  <p>One vote per phone. You can change your vote any time before voting closes.</p>
+  <p>— From the blueberry bungalow</p>
+</footer>
+
+<div class="bar" id="bar">
+  <div class="bar-inner">
+    <button class="btn" id="voteBtn" disabled>Tap a color to try it on</button>
+    <p class="msg" id="msg" role="alert"></p>
+  </div>
+</div>
+
+<script>
+/* ===== Settings ===== */
+const CONFIG = {
+  supabaseUrl: "https://vtdyyqpffavxpezxwmod.supabase.co",   // blank = preview mode, votes stay on this device
+  supabaseKey: "sb_publishable_FkBKT5LWKtcs6e8FuAttOA_u-l50RxD", // publishable key: safe to ship, tables are locked down
+  // Fallbacks for preview mode. With Supabase, closing time and winner come from the door_poll_settings table.
+  closesAt: "2026-12-07T00:00:00-05:00",
+  winner: null
+};
+
+const COLORS = [
+  { id: "tricorn-black",         name: "Tricorn Black",         code: "SW 6258",  brand: "Sherwin-Williams", hex: "#2F2F30", vibe: "Classic and crisp" },
+  { id: "roycroft-bottle-green", name: "Roycroft Bottle Green", code: "SW 2847",  brand: "Sherwin-Williams", hex: "#324038", vibe: "Old-school craftsman" },
+  { id: "thai-curry",            name: "Thai Curry",            code: "M320-7",   brand: "Behr",             hex: "#957C35", vibe: "Earthy olive gold" },
+  { id: "farm-fresh",            name: "Farm Fresh",            code: "S340-5",   brand: "Behr",             hex: "#A39E6C", vibe: "Earthy sage green" },
+  { id: "weekend",               name: "Weekend",               code: "MAG014",   brand: "Magnolia Home",    hex: "#405D60", vibe: "Deep, moody teal" },
+  { id: "fine-wine",             name: "Fine Wine",             code: "SW 6307",  brand: "Sherwin-Williams", hex: "#723941", vibe: "Deep wine red" },
+  { id: "butter-up",             name: "Butter Up",             code: "SW 6681",  brand: "Sherwin-Williams", hex: "#F6DDA3", vibe: "Pastel butter yellow" },
+];
+const OTHER = { id: "other", name: "Something else", code: "", brand: "", hex: "#D8D2C6", vibe: "Suggest your own" };
+const PRIMER = "#D8D2C6";
+
+/* ===== Helpers ===== */
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+function voterId() {
+  let id = store.get("doorvote.voter");
+  if (!id) {
+    id = (crypto.randomUUID && crypto.randomUUID()) ||
+      "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+    store.set("doorvote.voter", id);
+  }
+  return id;
+}
+const live = Boolean(CONFIG.supabaseUrl && CONFIG.supabaseKey);
+const byId = (id) => COLORS.find(c => c.id === id) || (id === "other" ? OTHER : null);
+
+async function rpc(fn, args = {}) {
+  const headers = { "Content-Type": "application/json", apikey: CONFIG.supabaseKey };
+  if (!CONFIG.supabaseKey.startsWith("sb_publishable_")) headers.Authorization = "Bearer " + CONFIG.supabaseKey;
+  const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/rpc/${fn}`, { method: "POST", headers, body: JSON.stringify(args) });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) throw new Error((data && (data.message || data.hint)) || "Request failed");
+  return data;
+}
+
+/* Preview-mode stand-ins */
+function localTallies() {
+  const mine = store.get("doorvote.choice");
+  const t = {}; if (mine) t[mine] = 1;
+  return { closes_at: CONFIG.closesAt, winner: CONFIG.winner, total: mine ? 1 : 0, tallies: t };
+}
+
+/* ===== State ===== */
+let selected = null;
+let poll = { closes_at: CONFIG.closesAt, winner: CONFIG.winner, total: 0, tallies: {} };
+const isClosed = () => poll.closes_at && Date.now() > new Date(poll.closes_at).getTime();
+
+/* ===== Rendering ===== */
+function paintDoor(c) {
+  document.documentElement.style.setProperty("--door", c && c.id !== "other" ? c.hex : PRIMER);
+  $("doorQ").setAttribute("opacity", c && c.id === "other" ? "1" : "0");
+  $("nowName").textContent = c ? (c.id === "other" ? "Your idea here" : c.name) : "Pick a color below";
+  $("nowCode").textContent = c && c.code ? `${c.code} · ${c.brand}` : "";
+}
+
+function renderOptions() {
+  const wrap = $("options");
+  wrap.innerHTML = "";
+  [...COLORS, OTHER].forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "opt"; b.dataset.id = c.id;
+    b.setAttribute("aria-pressed", String(selected === c.id));
+    const chip = c.id === "other"
+      ? `<span class="chip other" aria-hidden="true">?</span>`
+      : `<span class="chip" style="background:${c.hex}" aria-hidden="true"></span>`;
+    b.innerHTML = `${chip}<span><b>${c.name}</b><small>${c.vibe}</small></span>`;
+    b.addEventListener("click", () => select(c.id));
+    wrap.appendChild(b);
+  });
+}
+
+function select(id) {
+  selected = id;
+  document.querySelectorAll(".opt").forEach(el => el.setAttribute("aria-pressed", String(el.dataset.id === id)));
+  const c = byId(id);
+  paintDoor(c);
+  $("writeInField").hidden = id !== "other";
+  if (id === "other") setTimeout(() => $("writeIn").focus(), 50);
+  updateButton();
+  $("msg").textContent = "";
+}
+
+function updateButton() {
+  const btn = $("voteBtn");
+  const c = byId(selected);
+  if (!c) { btn.disabled = true; btn.textContent = "Tap a color to try it on"; return; }
+  btn.disabled = false;
+  const dot = c.id === "other" ? "" : `<span class="dot" style="background:${c.hex}"></span>`;
+  btn.innerHTML = `${dot}<span>${c.id === "other" ? "Vote for my idea" : "Vote for " + c.name}</span>`;
+}
+
+function renderResults() {
+  const mine = store.get("doorvote.choice");
+  const total = poll.total || 0;
+  const rows = COLORS.map(c => ({ ...c, n: (poll.tallies && poll.tallies[c.id]) || 0 }));
+  const otherN = (poll.tallies && poll.tallies.other) || 0;
+  if (otherN) rows.push({ ...OTHER, name: "Other ideas", hex: "#9C9285", n: otherN });
+  rows.sort((a, b) => b.n - a.n);
+  $("results").innerHTML = rows.map(r => {
+    const pct = total ? Math.round((r.n / total) * 100) : 0;
+    return `<div class="row ${mine === r.id ? "mine" : ""}">
+      <span class="name"><i style="background:${r.hex}"></i>${r.name}</span>
+      <span class="num">${r.n} · ${pct}%</span>
+      <span class="track"><span class="fill" data-w="${pct}" style="background:${r.hex}"></span></span>
+    </div>`;
+  }).join("");
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    document.querySelectorAll(".fill").forEach(f => f.style.width = Math.max(f.dataset.w, f.dataset.w > 0 ? 2 : 0) + "%");
+  }));
+  $("totalLine").textContent = total === 1 ? "1 vote so far" : `${total} votes so far`;
+
+  const w = poll.winner && byId(poll.winner);
+  $("winnerBox").hidden = !w;
+  if (w) {
+    $("winnerTitle").textContent = `The neighbors picked ${w.name}!`;
+    paintDoor(w);
+  }
+  if (isClosed()) {
+    $("thanksTitle").textContent = "Voting has closed";
+    $("thanksText").innerHTML = "Thanks to everyone who weighed in. Final tally below.";
+    $("resultsHeading").textContent = "Final results";
+  } else if (mine) {
+    const c = byId(mine);
+    $("thanksTitle").textContent = "Thanks, neighbor!";
+    $("thanksText").innerHTML = `You voted for <strong>${c ? (c.id === "other" ? "your own idea" : c.name) : "a color"}</strong>. <button class="linkish" id="changeBtn">Change my vote</button>`;
+    $("changeBtn").addEventListener("click", showVote);
+  }
+}
+
+function showResults() {
+  $("voteView").hidden = true;
+  $("resultsView").hidden = false;
+  $("bar").hidden = true;
+  document.body.style.paddingBottom = "24px";
+  const mine = byId(store.get("doorvote.choice"));
+  if (mine && !poll.winner) paintDoor(mine);
+  renderResults();
+  window.scrollTo({ top: $("resultsView").offsetTop - 12, behavior: "smooth" });
+}
+
+function showVote() {
+  $("voteView").hidden = false;
+  $("resultsView").hidden = true;
+  $("bar").hidden = false;
+  document.body.style.paddingBottom = "";
+  const mine = store.get("doorvote.choice");
+  if (mine) { select(mine); $("writeIn").value = store.get("doorvote.writein") || ""; }
+}
+
+function renderClosesLine() {
+  if (!poll.closes_at) return;
+  const d = new Date(new Date(poll.closes_at).getTime() - 1);
+  const label = d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", timeZone: "America/New_York" });
+  $("closesLine").textContent = isClosed() ? "Voting is closed." : `Voting is open through ${label}.`;
+}
+
+/* ===== Actions ===== */
+async function loadPoll() {
+  try {
+    poll = live ? await rpc("door_vote_results") : localTallies();
+  } catch (e) {
+    console.warn(e);
+  }
+  renderClosesLine();
+}
+
+async function submit() {
+  const c = byId(selected);
+  if (!c) return;
+  const writeIn = $("writeIn").value.trim();
+  if (c.id === "other" && !writeIn) { $("msg").textContent = "Type your color idea first."; $("writeIn").focus(); return; }
+  const btn = $("voteBtn");
+  btn.disabled = true; btn.textContent = "Saving your vote…";
+  try {
+    if (live) {
+      await rpc("cast_door_vote", {
+        p_voter: voterId(),
+        p_color: c.id,
+        p_write_in: c.id === "other" ? writeIn : null,
+        p_name: $("voterName").value.trim() || null,
+        p_note: $("note").value.trim() || null,
+      });
+    }
+    store.set("doorvote.choice", c.id);
+    store.set("doorvote.writein", c.id === "other" ? writeIn : "");
+    await loadPoll();
+    showResults();
+  } catch (e) {
+    $("msg").textContent = /closed/i.test(e.message) ? "Sorry — voting has closed." : "Couldn't save your vote. Check your signal and try again.";
+    updateButton();
+  }
+}
+
+/* ===== Boot ===== */
+$("previewNote").hidden = live;
+$("voteBtn").addEventListener("click", submit);
+renderOptions();
+paintDoor(null);
+loadPoll().then(() => {
+  if (store.get("doorvote.choice") || isClosed() || poll.winner) showResults();
+});
+</script>
+</body>
+</html>
